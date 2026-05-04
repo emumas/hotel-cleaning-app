@@ -1,45 +1,30 @@
-name: Deploy to GitHub Pages
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- この行がビルドに必須です -->
+  <base href="$FLUTTER_BASE_HREF">
 
-on:
-  push:
-    branches:
-      - main
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Hotel Cleaning Management App">
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="hotel_cleaning_app">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          
-      - name: Install dependencies
-        run: |
-          flutter pub add dev:custom_lint:^0.7.6
-          flutter pub get
-          
-      - name: Build Web
-        run: flutter build web --release --base-href "/hotel-cleaning-app/"
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+  <title>hotel_cleaning_app</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script src="flutter_bootstrap.js" async></script>
+</head>
+<body>
+  <div id="loading" style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
+    Loading...
+  </div>
+</body>
+</html>
