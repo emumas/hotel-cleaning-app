@@ -1,0 +1,1 @@
+ /home/ubuntu/hotel-cleaning-app/.dart_tool/flutter_build/3bfbc0c54e7e816276282d581b892250/dart_build_result.json:  /home/ubuntu/flutter/bin/cache/dart-sdk/version /home/ubuntu/hotel-cleaning-app/.dart_tool/package_config.json /home/ubuntu/hotel-cleaning-app/pubspec.yaml

@@ -1,8 +1,8 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hotel_cleaning_app/models/defect_report.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:typed_data';
 
 class DefectService {
   final FirebaseFirestore _db;
@@ -32,11 +32,11 @@ class DefectService {
         .map((s) => s.docs.map(DefectReport.fromFirestore).toList());
   }
 
-  Future<String> uploadPhoto(Uint8List photoData, String reportId, String fileName) async {
+  Future<String> uploadPhoto(Uint8List photoData, String reportId) async {
     final ref = _storage
         .ref()
-        .child('defects/$reportId/$fileName');
-    await ref.putData(photoData, SettableMetadata(contentType: 'image/jpeg'));
+        .child('defects/$reportId/${_uuid.v4()}.jpg');
+    await ref.putData(photoData);
     return await ref.getDownloadURL();
   }
 
@@ -45,15 +45,14 @@ class DefectService {
     required String roomNumber,
     required String floorName,
     required DefectLocation location,
-    required List<Uint8List> photosData,
+    required List<Uint8List> photos,
     required String registeredBy,
     String? notes,
   }) async {
     final id = _uuid.v4();
     final photoUrls = <String>[];
-    for (int i = 0; i < photosData.length; i++) {
-      final fileName = '${_uuid.v4()}.jpg';
-      final url = await uploadPhoto(photosData[i], id, fileName);
+    for (final photo in photos) {
+      final url = await uploadPhoto(photo, id);
       photoUrls.add(url);
     }
     final report = DefectReport(
@@ -68,12 +67,7 @@ class DefectService {
       status: DefectStatus.pending,
       notes: notes,
     );
-    try {
-      await _db.collection('defect_reports').doc(id).set(report.toFirestore());
-    } catch (e) {
-      print("Error adding defect report to Firestore: $e");
-      rethrow;
-    }
+    await _db.collection('defect_reports').doc(id).set(report.toFirestore());
     return report;
   }
 
@@ -88,13 +82,12 @@ class DefectService {
 
   Future<void> completeDefect(
     String reportId, {
-    Uint8List? completionPhotoData,
+    Uint8List? completionPhoto,
     String? notes,
   }) async {
     String? completionPhotoUrl;
-    if (completionPhotoData != null) {
-      final fileName = '${_uuid.v4()}.jpg';
-      completionPhotoUrl = await uploadPhoto(completionPhotoData, reportId, fileName);
+    if (completionPhoto != null) {
+      completionPhotoUrl = await uploadPhoto(completionPhoto, '$reportId-done');
     }
     await _db.collection('defect_reports').doc(reportId).update({
       'status': DefectStatus.repaired.displayName,

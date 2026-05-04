@@ -18,7 +18,7 @@ class DefectReportScreen extends ConsumerStatefulWidget {
 
 class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
   DefectLocation? _selectedLocation;
-  final List<XFile> _photos = [];
+  final List<Uint8List> _photos = [];
   final _notesController = TextEditingController();
   bool _isLoading = false;
 
@@ -29,7 +29,8 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
       imageQuality: 80,
     );
     if (picked != null) {
-      setState(() => _photos.add(picked));
+      final bytes = await picked.readAsBytes();
+      setState(() => _photos.add(bytes));
     }
   }
 
@@ -51,18 +52,12 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
     try {
       final service = ref.read(defectServiceProvider);
       final userName = ref.read(currentUserNameProvider);
-
-      final List<Uint8List> photosData = [];
-      for (final xFile in _photos) {
-        photosData.add(await xFile.readAsBytes());
-      }
-
       await service.addDefectReport(
         roomId: widget.roomId,
         roomNumber: widget.extra?['roomNumber'] ?? '',
         floorName: widget.extra?['floorName'] ?? '',
         location: _selectedLocation!,
-        photosData: photosData,
+        photos: _photos,
         registeredBy: userName,
         notes: _notesController.text.trim().isEmpty
             ? null
@@ -72,7 +67,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: ${e.toString()}')),
+          SnackBar(content: Text('エラー: $e')),
         );
       }
     } finally {
@@ -119,31 +114,17 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
                   itemCount: _photos.length,
                   itemBuilder: (context, i) => Stack(
                     children: [
-                      FutureBuilder<Uint8List>(
-                        future: _photos[i].readAsBytes(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                image: DecorationImage(
-                                  image: MemoryImage(snapshot.data!),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            );
-                          }
-                          return Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            width: 100,
-                            height: 100,
-                            color: Colors.grey[300],
-                            child: const Center(child: CircularProgressIndicator()),
-                          );
-                        },
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: MemoryImage(_photos[i]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       Positioned(
                         top: 4,

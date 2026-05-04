@@ -20,11 +20,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyBHqgce--zPg0wrzBEqkz0tQMx2zBpaYEw',
-    appId: '1:851039599507:web:348858f3401d2893fb0666',
-    messagingSenderId: '851039599507',
-    projectId: 'hotel-47826',
     authDomain: 'hotel-47826.firebaseapp.com',
+    projectId: 'hotel-47826',
     storageBucket: 'hotel-47826.firebasestorage.app',
+    messagingSenderId: '851039599507',
+    appId: '1:851039599507:web:348858f3401d2893fb0666',
     measurementId: 'G-ETSJK1SHFK',
   );
 
@@ -32,16 +32,16 @@ class DefaultFirebaseOptions {
     apiKey: 'YOUR_ANDROID_API_KEY',
     appId: 'YOUR_ANDROID_APP_ID',
     messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'hotel-47826',
-    storageBucket: 'hotel-47826.firebasestorage.app',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'YOUR_IOS_API_KEY',
     appId: 'YOUR_IOS_APP_ID',
     messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'hotel-47826',
-    storageBucket: 'hotel-47826.firebasestorage.app',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
     iosBundleId: 'com.example.hotelCleaningApp',
   );
 }

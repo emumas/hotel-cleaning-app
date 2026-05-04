@@ -3,21 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_cleaning_app/app.dart';
 import 'package:hotel_cleaning_app/firebase_options.dart';
+import 'package:hotel_cleaning_app/providers/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    debugPrint('Firebase initialization error: $e');
-  }
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     const ProviderScope(
-      child: HotelCleaningApp(),
+      child: _AppInit(),
     ),
   );
+}
+
+class _AppInit extends ConsumerWidget {
+  const _AppInit();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize default PINs on first launch
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(authServiceProvider).initializePinsIfNeeded();
+    });
+
+    return const HotelCleaningApp();
+  }
 }

@@ -253,13 +253,11 @@ class _StatusActionsState extends ConsumerState<_StatusActions> {
             child: const Text('修繕待ちにする'),
           ),
         if (widget.defect.status != DefectStatus.repaired)
-          _isLoading
-              ? const CircularProgressIndicator()
-              : OutlinedButton.icon(
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('完了写真を撮影して修繕完了'),
-                  onPressed: _completeWithPhoto,
-                ),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('完了写真を撮影して修繕完了'),
+            onPressed: _completeWithPhoto,
+          ),
       ],
     );
   }
@@ -273,10 +271,10 @@ class _StatusActionsState extends ConsumerState<_StatusActions> {
     setState(() => _isLoading = true);
     try {
       final service = ref.read(defectServiceProvider);
-      final photoData = await picked.readAsBytes();
+      final bytes = await picked.readAsBytes();
       await service.completeDefect(
         widget.defect.id,
-        completionPhotoData: photoData,
+        completionPhoto: bytes,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

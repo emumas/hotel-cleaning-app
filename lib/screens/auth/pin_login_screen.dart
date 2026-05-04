@@ -16,7 +16,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   String? _error;
 
   void _onKeyPress(String value) {
-    if (_pin.length >= 4) return;
+    if (_pin.length >= 6) return;
     setState(() {
       _pin += value;
       _error = null;
@@ -39,15 +39,9 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
       } else {
         setState(() {
           _error = 'PINコードが正しくありません';
-        debugPrint('Login Error: PIN incorrect'); // デバッグ用にエラーをコンソールに出力
           _pin = '';
         });
       }
-    } on Exception catch (e) {
-      setState(() {
-        _error = 'エラーが発生しました: ${e.toString()}';
-        _pin = '';
-      });
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

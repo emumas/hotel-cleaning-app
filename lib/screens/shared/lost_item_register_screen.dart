@@ -18,7 +18,7 @@ class LostItemRegisterScreen extends ConsumerStatefulWidget {
 
 class _LostItemRegisterScreenState
     extends ConsumerState<LostItemRegisterScreen> {
-  XFile? _photo;
+  Uint8List? _photo;
   final _descriptionController = TextEditingController();
   bool _isLoading = false;
 
@@ -29,7 +29,8 @@ class _LostItemRegisterScreenState
       imageQuality: 80,
     );
     if (picked != null) {
-      setState(() => _photo = picked);
+      final bytes = await picked.readAsBytes();
+      setState(() => _photo = bytes);
     }
   }
 
@@ -44,13 +45,11 @@ class _LostItemRegisterScreenState
     try {
       final service = ref.read(lostItemServiceProvider);
       final userName = ref.read(currentUserNameProvider);
-      final photoData = await _photo!.readAsBytes();
-
       await service.addLostItem(
         roomId: widget.roomId,
         roomNumber: widget.extra?['roomNumber'] ?? '',
         floorName: widget.extra?['floorName'] ?? '',
-        photoData: photoData,
+        photo: _photo!,
         registeredBy: userName,
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -87,24 +86,11 @@ class _LostItemRegisterScreenState
             if (_photo != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: FutureBuilder<Uint8List>(
-                  future: _photo!.readAsBytes(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Image.memory(
-                        snapshot.data!,
-                        width: double.infinity,
-                        height: 240,
-                        fit: BoxFit.cover,
-                      );
-                    }
-                    return Container(
-                      width: double.infinity,
-                      height: 240,
-                      color: Colors.grey[300],
-                      child: const Center(child: CircularProgressIndicator()),
-                    );
-                  },
+                child: Image.memory(
+                  _photo!,
+                  width: double.infinity,
+                  height: 240,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 8),
