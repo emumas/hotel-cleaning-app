@@ -26,7 +26,7 @@ jobs:
           flutter pub get
           
       - name: Build Web
-        run: flutter build web --release --base-href "/hotel-cleaning-app/" --web-renderer html
+        run: flutter build web --release --base-href "/hotel-cleaning-app/"
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
