@@ -8,11 +8,10 @@ import 'package:hotel_cleaning_app/providers/providers.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Firebaseの設定が完了するまで、初期化をスキップします
   try {
-    // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   } catch (e) {
-    debugPrint('Firebase initialization skipped: $e');
+    debugPrint('Firebase initialization error: $e');
   }
 
   runApp(
@@ -27,8 +26,14 @@ class _AppInit extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Firebaseがない場合、この初期化処理もエラーになる可能性があるため、
-    // 必要に応じてサービス側でエラーハンドリングを行う必要があります。
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await ref.read(authServiceProvider).initializePinsIfNeeded();
+      } catch (e) {
+        debugPrint('PIN initialization error: $e');
+      }
+    });
+
     return const HotelCleaningApp();
   }
 }
