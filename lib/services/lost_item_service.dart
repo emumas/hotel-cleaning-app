@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hotel_cleaning_app/models/lost_item.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:typed_data'; // Add this import for Uint8List
 
 class LostItemService {
   final FirebaseFirestore _db;
@@ -34,11 +34,12 @@ class LostItemService {
         .map((s) => s.docs.map(LostItem.fromFirestore).toList());
   }
 
-  Future<String> uploadPhoto(File file, String itemId) async {
+  // Modified to accept Uint8List and fileName
+  Future<String> uploadPhoto(Uint8List photoData, String itemId, String fileName) async {
     final ref = _storage
         .ref()
-        .child('lost_items/$itemId/${_uuid.v4()}.jpg');
-    await ref.putFile(file);
+        .child('lost_items/$itemId/$fileName'); // Use fileName directly
+    await ref.putData(photoData); // Use putData for Uint8List
     return await ref.getDownloadURL();
   }
 
@@ -46,12 +47,13 @@ class LostItemService {
     required String roomId,
     required String roomNumber,
     required String floorName,
-    required File photo,
+    required Uint8List photoData, // Changed from File to Uint8List
     required String registeredBy,
     String? description,
   }) async {
     final id = _uuid.v4();
-    final photoUrl = await uploadPhoto(photo, id);
+    final fileName = '${_uuid.v4()}.jpg'; // Generate a unique file name
+    final photoUrl = await uploadPhoto(photoData, id, fileName); // Pass photoData and fileName
     final now = DateTime.now();
     final today = _todayString();
     final item = LostItem(

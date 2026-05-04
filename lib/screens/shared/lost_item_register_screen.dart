@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html';
+import 'dart:typed_data'; // Add this import for Uint8List
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,7 @@ class LostItemRegisterScreen extends ConsumerStatefulWidget {
 
 class _LostItemRegisterScreenState
     extends ConsumerState<LostItemRegisterScreen> {
-  File? _photo;
+  Uint8List? _photo; // Changed from File? to Uint8List?
   final _descriptionController = TextEditingController();
   bool _isLoading = false;
 
@@ -29,7 +30,7 @@ class _LostItemRegisterScreenState
       imageQuality: 80,
     );
     if (picked != null) {
-      setState(() => _photo = File(picked.path));
+      setState(() async => _photo = await picked.readAsBytes()); // Store Uint8List directly
     }
   }
 
@@ -44,11 +45,12 @@ class _LostItemRegisterScreenState
     try {
       final service = ref.read(lostItemServiceProvider);
       final userName = ref.read(currentUserNameProvider);
+
       await service.addLostItem(
         roomId: widget.roomId,
         roomNumber: widget.extra?['roomNumber'] ?? '',
         floorName: widget.extra?['floorName'] ?? '',
-        photo: _photo!,
+        photoData: _photo!, // Pass photoData instead of _photo
         registeredBy: userName,
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -85,8 +87,8 @@ class _LostItemRegisterScreenState
             if (_photo != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  _photo!,
+                child: Image.memory(
+                  _photo!, // Display Uint8List as MemoryImage
                   width: double.infinity,
                   height: 240,
                   fit: BoxFit.cover,

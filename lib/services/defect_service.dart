@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hotel_cleaning_app/models/defect_report.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:typed_data'; // Add this import for Uint8List
 
 class DefectService {
   final FirebaseFirestore _db;
@@ -32,11 +32,12 @@ class DefectService {
         .map((s) => s.docs.map(DefectReport.fromFirestore).toList());
   }
 
-  Future<String> uploadPhoto(File file, String reportId) async {
+  // Modified to accept Uint8List and fileName
+  Future<String> uploadPhoto(Uint8List photoData, String reportId, String fileName) async {
     final ref = _storage
         .ref()
-        .child('defects/$reportId/${_uuid.v4()}.jpg');
-    await ref.putFile(file);
+        .child('defects/$reportId/$fileName'); // Use fileName directly
+    await ref.putData(photoData); // Use putData for Uint8List
     return await ref.getDownloadURL();
   }
 
@@ -45,14 +46,15 @@ class DefectService {
     required String roomNumber,
     required String floorName,
     required DefectLocation location,
-    required List<File> photos,
+    required List<Uint8List> photosData, // Changed from List<File> to List<Uint8List>
     required String registeredBy,
     String? notes,
   }) async {
     final id = _uuid.v4();
     final photoUrls = <String>[];
-    for (final photo in photos) {
-      final url = await uploadPhoto(photo, id);
+    for (int i = 0; i < photosData.length; i++) {
+      final fileName = '${_uuid.v4()}.jpg'; // Generate a unique file name
+      final url = await uploadPhoto(photosData[i], id, fileName); // Pass photoData and fileName
       photoUrls.add(url);
     }
     final report = DefectReport(
@@ -82,12 +84,15 @@ class DefectService {
 
   Future<void> completeDefect(
     String reportId, {
-    File? completionPhoto,
+    Uint8List? completionPhotoData, // Changed from File? to Uint8List?
     String? notes,
   }) async {
     String? completionPhotoUrl;
-    if (completionPhoto != null) {
-      completionPhotoUrl = await uploadPhoto(completionPhoto, '$reportId-done');
+    if (completionPhotoData != null) {
+      final fileName = '${_uuid.v4()}.jpg';
+      completionPhotoUrl = await uploadPhoto(completionPhotoData, '
+          '
+          '$reportId-done', fileName); // Pass photoData and fileName
     }
     await _db.collection('defect_reports').doc(reportId).update({
       'status': DefectStatus.repaired.displayName,

@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html';
+import 'dart:typed_data'; // Add this import for Uint8List
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,7 @@ class DefectReportScreen extends ConsumerStatefulWidget {
 
 class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
   DefectLocation? _selectedLocation;
-  final List<File> _photos = [];
+  final List<XFile> _photos = []; // Changed from List<File> to List<XFile>
   final _notesController = TextEditingController();
   bool _isLoading = false;
 
@@ -29,7 +30,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
       imageQuality: 80,
     );
     if (picked != null) {
-      setState(() => _photos.add(File(picked.path)));
+      setState(() => _photos.add(picked)); // Store XFile directly
     }
   }
 
@@ -51,12 +52,18 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
     try {
       final service = ref.read(defectServiceProvider);
       final userName = ref.read(currentUserNameProvider);
+
+      final List<Uint8List> photosData = [];
+      for (final xFile in _photos) {
+        photosData.add(await xFile.readAsBytes()); // Convert XFile to Uint8List
+      }
+
       await service.addDefectReport(
         roomId: widget.roomId,
         roomNumber: widget.extra?['roomNumber'] ?? '',
         floorName: widget.extra?['floorName'] ?? '',
         location: _selectedLocation!,
-        photos: _photos,
+        photosData: photosData, // Pass photosData instead of _photos
         registeredBy: userName,
         notes: _notesController.text.trim().isEmpty
             ? null
@@ -120,7 +127,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           image: DecorationImage(
-                            image: FileImage(_photos[i]),
+                            image: MemoryImage(File(_photos[i].path).readAsBytesSync()), // Display XFile as MemoryImage
                             fit: BoxFit.cover,
                           ),
                         ),
