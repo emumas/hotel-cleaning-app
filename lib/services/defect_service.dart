@@ -54,12 +54,7 @@ class DefectService {
     for (int i = 0; i < photosData.length; i++) {
       final fileName = '${_uuid.v4()}.jpg';
       final url = await uploadPhoto(photosData[i], id, fileName);
-      try {
-        photoUrls.add(url);
-      } catch (e) {
-        print("Error adding photo URL: $e");
-        rethrow;
-      }
+      photoUrls.add(url);
     }
     final report = DefectReport(
       id: id,
@@ -74,11 +69,12 @@ class DefectService {
       notes: notes,
     );
     try {
-      await _db.collection(\'defect_reports\').doc(id).set(report.toFirestore());
+      await _db.collection('defect_reports').doc(id).set(report.toFirestore());
     } catch (e) {
       print("Error adding defect report to Firestore: $e");
       rethrow;
-    }   return report;
+    }
+    return report;
   }
 
   Future<void> updateDefectStatus(
