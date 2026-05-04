@@ -26,8 +26,7 @@ jobs:
           flutter pub get
           
       - name: Build Web
-        # ここに --base-href を明示的に追加しました
-        run: flutter build web --release --base-href "/hotel-cleaning-app/"
+        run: flutter build web --release --base-href "/hotel-cleaning-app/" --web-renderer html
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
