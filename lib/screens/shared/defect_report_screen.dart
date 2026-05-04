@@ -71,9 +71,8 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(          SnackBar(content: Text(\'エラーが発生しました: ${e.toString()}\')),
+       );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

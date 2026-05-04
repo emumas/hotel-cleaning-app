@@ -36,7 +36,7 @@ class DefectService {
     final ref = _storage
         .ref()
         .child('defects/$reportId/$fileName');
-    await ref.putData(photoData);
+    await ref.putData(photoData, SettableMetadata(contentType: 'image/jpeg'));
     return await ref.getDownloadURL();
   }
 
@@ -54,7 +54,12 @@ class DefectService {
     for (int i = 0; i < photosData.length; i++) {
       final fileName = '${_uuid.v4()}.jpg';
       final url = await uploadPhoto(photosData[i], id, fileName);
-      photoUrls.add(url);
+      try {
+        photoUrls.add(url);
+      } catch (e) {
+        print("Error adding photo URL: $e");
+        rethrow;
+      }
     }
     final report = DefectReport(
       id: id,
@@ -68,8 +73,12 @@ class DefectService {
       status: DefectStatus.pending,
       notes: notes,
     );
-    await _db.collection('defect_reports').doc(id).set(report.toFirestore());
-    return report;
+    try {
+      await _db.collection(\'defect_reports\').doc(id).set(report.toFirestore());
+    } catch (e) {
+      print("Error adding defect report to Firestore: $e");
+      rethrow;
+    }   return report;
   }
 
   Future<void> updateDefectStatus(
