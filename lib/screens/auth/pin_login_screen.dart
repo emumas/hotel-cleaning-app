@@ -16,7 +16,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
   String? _error;
 
   void _onKeyPress(String value) {
-    if (_pin.length >= 6) return;
+    if (_pin.length >= 4) return;
     setState(() {
       _pin += value;
       _error = null;
