@@ -39,9 +39,15 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
       } else {
         setState(() {
           _error = 'PINコードが正しくありません';
+        debugPrint('Login Error: $e'); // デバッグ用にエラーをコンソールに出力
           _pin = '';
         });
       }
+    } on Exception catch (e) {
+      setState(() {
+        _error = 'エラーが発生しました: ${e.toString()}';
+        _pin = '';
+      });
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
