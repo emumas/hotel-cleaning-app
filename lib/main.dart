@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hotel_cleaning_app/app.dart';
 import 'package:hotel_cleaning_app/firebase_options.dart';
-import 'package:hotel_cleaning_app/providers/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Web環境での初期化をより確実にする設定
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -19,7 +17,7 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: HotelCleaningApp(), // _AppInitを介さず直接起動して型エラーを回避
+      child: HotelCleaningApp(),
     ),
   );
 }
