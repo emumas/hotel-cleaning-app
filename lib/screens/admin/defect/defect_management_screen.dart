@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -222,7 +222,6 @@ class _StatusActions extends ConsumerStatefulWidget {
 }
 
 class _StatusActionsState extends ConsumerState<_StatusActions> {
-  File? _completionPhoto;
   bool _isLoading = false;
 
   @override
@@ -254,11 +253,13 @@ class _StatusActionsState extends ConsumerState<_StatusActions> {
             child: const Text('修繕待ちにする'),
           ),
         if (widget.defect.status != DefectStatus.repaired)
-          OutlinedButton.icon(
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('完了写真を撮影して修繕完了'),
-            onPressed: _completeWithPhoto,
-          ),
+          _isLoading
+              ? const CircularProgressIndicator()
+              : OutlinedButton.icon(
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('完了写真を撮影して修繕完了'),
+                  onPressed: _completeWithPhoto,
+                ),
       ],
     );
   }
@@ -272,9 +273,10 @@ class _StatusActionsState extends ConsumerState<_StatusActions> {
     setState(() => _isLoading = true);
     try {
       final service = ref.read(defectServiceProvider);
+      final photoData = await picked.readAsBytes();
       await service.completeDefect(
         widget.defect.id,
-        completionPhoto: File(picked.path),
+        completionPhotoData: photoData,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

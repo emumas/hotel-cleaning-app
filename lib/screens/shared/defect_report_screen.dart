@@ -1,5 +1,4 @@
-import 'dart:io' if (dart.library.html) 'dart:html';
-import 'dart:typed_data'; // Add this import for Uint8List
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +18,7 @@ class DefectReportScreen extends ConsumerStatefulWidget {
 
 class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
   DefectLocation? _selectedLocation;
-  final List<XFile> _photos = []; // Changed from List<File> to List<XFile>
+  final List<XFile> _photos = [];
   final _notesController = TextEditingController();
   bool _isLoading = false;
 
@@ -30,7 +29,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
       imageQuality: 80,
     );
     if (picked != null) {
-      setState(() => _photos.add(picked)); // Store XFile directly
+      setState(() => _photos.add(picked));
     }
   }
 
@@ -55,7 +54,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
 
       final List<Uint8List> photosData = [];
       for (final xFile in _photos) {
-        photosData.add(await xFile.readAsBytes()); // Convert XFile to Uint8List
+        photosData.add(await xFile.readAsBytes());
       }
 
       await service.addDefectReport(
@@ -63,7 +62,7 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
         roomNumber: widget.extra?['roomNumber'] ?? '',
         floorName: widget.extra?['floorName'] ?? '',
         location: _selectedLocation!,
-        photosData: photosData, // Pass photosData instead of _photos
+        photosData: photosData,
         registeredBy: userName,
         notes: _notesController.text.trim().isEmpty
             ? null
@@ -120,17 +119,31 @@ class _DefectReportScreenState extends ConsumerState<DefectReportScreen> {
                   itemCount: _photos.length,
                   itemBuilder: (context, i) => Stack(
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: MemoryImage(File(_photos[i].path).readAsBytesSync()), // Display XFile as MemoryImage
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                      FutureBuilder<Uint8List>(
+                        future: _photos[i].readAsBytes(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                  image: MemoryImage(snapshot.data!),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          }
+                          return Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            width: 100,
+                            height: 100,
+                            color: Colors.grey[300],
+                            child: const Center(child: CircularProgressIndicator()),
+                          );
+                        },
                       ),
                       Positioned(
                         top: 4,
